@@ -39,10 +39,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -55,6 +52,7 @@ import org.scijava.download.DownloadService;
 import org.scijava.event.EventHandler;
 import org.scijava.io.location.BytesLocation;
 import org.scijava.io.location.Location;
+import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.service.AbstractService;
@@ -65,8 +63,6 @@ import org.scijava.util.ByteArray;
 import org.scijava.util.FileUtils;
 import org.tensorflow.Graph;
 import org.tensorflow.SavedModelBundle;
-
-import scala.tools.jline_embedded.internal.Log;
 
 /**
  * Default implementation of {@link TensorFlowService}.
@@ -83,6 +79,9 @@ public class DefaultTensorFlowService extends AbstractService implements TensorF
 
 	@Parameter
 	private AppService appService;
+
+	@Parameter
+	private LogService logService;
 
 	/** Models which are already cached in memory. */
 	private final Map<String, SavedModelBundle> models = new HashMap<>();
@@ -209,7 +208,6 @@ public class DefaultTensorFlowService extends AbstractService implements TensorF
 		// Cache the models into $IMAGEJ_DIR/models.
 		final File cacheBase;
 
-		System.out.println(System.getProperty(CACHE_DIR_PROPERTY_KEY));
 		if (System.getProperty(CACHE_DIR_PROPERTY_KEY) != null) {
 			cacheBase = new File(System.getProperty(CACHE_DIR_PROPERTY_KEY));
 		} else {
@@ -219,8 +217,10 @@ public class DefaultTensorFlowService extends AbstractService implements TensorF
 
 		if (!cacheBase.exists())
 			cacheBase.mkdirs();
-		cache.setBaseDirectory(cacheBase);
 
+		logService.info("TensorFlow model cache: " + cacheBase.getAbsolutePath());
+
+		cache.setBaseDirectory(cacheBase);
 		modelCache = cache;
 	}
 
