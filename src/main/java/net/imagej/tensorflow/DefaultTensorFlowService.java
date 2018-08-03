@@ -113,6 +113,9 @@ public class DefaultTensorFlowService extends AbstractService implements TensorF
 		final SavedModelBundle model = //
 				SavedModelBundle.load(modelDir.getAbsolutePath(), tags);
 
+		// Cache the result for performance next time.
+		models.put(key, model);
+
 		return model;
 	}
 
